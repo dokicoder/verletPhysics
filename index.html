@@ -15,6 +15,12 @@
         <button id="startPauseButton" onclick="toggleSimulation()">Start</button>
         <button id="resetButton" onclick="resetSimulation()">Reset</button>
       </div>
+
+      <div class="controlsGroup">
+        <input type="checkbox" checked="true" id="chainModeToggle" onclick="toggleChainMode()" />
+        <label for="chainModeToggle">Auto Chain</label>
+      </div>
+
       <canvas id="mainCanvas" width="500" height="500"> </canvas>
       <script src="index.js"></script>
     </main>

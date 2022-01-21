@@ -2,6 +2,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+
+  font-family: sans-serif;
 }
 
 main {
@@ -25,4 +27,24 @@ main {
 
 .buttonGroup button {
   padding: 15px 30px;
+}
+
+.controlsGroup {
+  position: absolute;
+  left: 20px;
+  top: 100px;
+  width: 150px;
+  padding: 10px;
+  background-color: #cccccc88;
+}
+
+.controlsGroup label {
+  padding: 10px;
+  position: relative;
+  bottom: 5px;
+}
+
+.controlsGroup input {
+  width: 20px;
+  height: 20px;
 }

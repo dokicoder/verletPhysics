@@ -10,10 +10,12 @@ const gravity = 0.3;
 const friction = 0.992;
 const borderOffset = 3;
 
-let simulationMode = 'init';
-
 let points = [];
 let sticks = [];
+
+// ui state flags
+let simulationMode = 'init';
+let autoChainMode = true;
 
 // cannot use last element in array because we look for similar points and do not readd them
 // in this case we have to keep a reference to the last similar point
@@ -211,16 +213,18 @@ document.getElementById('mainCanvas').onclick = function (event) {
   const similarPoint = points.find((p) => distance(p, { x: canvasXpos, y: canvasYpos }) < 4);
 
   if (similarPoint && points.length) {
-    const p0 = lastPointAdded;
-    const p1 = similarPoint;
+    if (autoChainMode) {
+      const p0 = lastPointAdded;
+      const p1 = similarPoint;
+
+      sticks.push({
+        p0,
+        p1,
+        length: distance(p0, p1),
+      });
+    }
 
     lastPointAdded = similarPoint;
-
-    sticks.push({
-      p0,
-      p1,
-      length: distance(p0, p1),
-    });
   } else {
     points.push({
       x: canvasXpos,
@@ -232,18 +236,24 @@ document.getElementById('mainCanvas').onclick = function (event) {
     });
 
     if (points.length >= 2) {
-      const p0 = lastPointAdded;
-      const p1 = points[points.length - 1];
+      if (autoChainMode) {
+        const p0 = lastPointAdded;
+        const p1 = points[points.length - 1];
 
-      sticks.push({
-        p0,
-        p1,
-        length: distance(p0, p1),
-      });
+        sticks.push({
+          p0,
+          p1,
+          length: distance(p0, p1),
+        });
+      }
     }
 
     lastPointAdded = points[points.length - 1];
   }
+};
+
+const toggleChainMode = () => {
+  autoChainMode = !autoChainMode;
 };
 
 /*
