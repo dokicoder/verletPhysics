@@ -8,6 +8,7 @@ const NUM_VERLET_INTEGRATIONS = 3;
 const bounceDamping = 0.78;
 const gravity = 0.3;
 const friction = 0.992;
+const borderOffset = 3;
 
 let simulationMode = 'init';
 
@@ -85,12 +86,15 @@ function updateSticks() {
 function constrainBorders() {
   points.forEach((p) => {
     // bounce at borders
-    if (p.x > width) {
-      p.x = width;
+    if (p.x > width - borderOffset) {
+      p.x = width - borderOffset;
+      p.prevX = p.x + vX * bounceDamping;
+    } else if (p.x < borderOffset) {
+      p.x = borderOffset;
       p.prevX = p.x + vX * bounceDamping;
     }
-    if (p.y > height) {
-      p.y = height;
+    if (p.y > height - borderOffset) {
+      p.y = height - borderOffset;
       p.prevY = p.y + vY * bounceDamping;
     }
   });
