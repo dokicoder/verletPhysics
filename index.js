@@ -1,5 +1,5 @@
-const canvas = document.getElementById("mainCanvas");
-const context = canvas.getContext("2d");
+const canvas = document.getElementById('mainCanvas');
+const context = canvas.getContext('2d');
 let width = canvas.width;
 let height = canvas.height;
 let aspect = height / width;
@@ -8,6 +8,8 @@ const NUM_VERLET_INTEGRATIONS = 3;
 const bounceDamping = 0.78;
 const gravity = 0.3;
 const friction = 0.992;
+
+let simulationMode = 'init';
 
 const points = [];
 const sticks = [];
@@ -20,11 +22,13 @@ function distance(p0, p1) {
 }
 
 function update() {
-  updatePoints();
+  if (simulationMode === 'running') {
+    updatePoints();
 
-  for (let i = 0; i < NUM_VERLET_INTEGRATIONS; ++i) {
-    updateSticks();
-    constrainBorders();
+    for (let i = 0; i < NUM_VERLET_INTEGRATIONS; ++i) {
+      updateSticks();
+      constrainBorders();
+    }
   }
 
   context.clearRect(0, 0, width, height);
@@ -134,10 +138,24 @@ window.onload = function () {
   update();
 };
 
+function toggleSimulation() {
+  if (simulationMode === 'init' || simulationMode === 'paused') {
+    simulationMode = 'running';
+  } else {
+    simulationMode = 'paused';
+  }
+
+  document.getElementById('simulationModeButton').innerHTML =
+    {
+      init: 'Start',
+      paused: 'Resume',
+      running: 'Pause',
+    }[simulationMode] || 'missing label';
+}
 /*
 window.onresize = function () {
-  canvas.width = window.getElementById("main").width;
-  canvas.height = window.getElementById("main").height;
+  canvas.width = document.getElementById("main").width;
+  canvas.height = document.getElementById("main").height;
   width = canvas.width;
   height = canvas.height;
   aspect = height / width;
