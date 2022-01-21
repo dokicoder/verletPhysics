@@ -1,0 +1,14 @@
+{
+  "name": "verletphysics",
+  "version": "1.0.0",
+  "description": "verlet physics toy",
+  "main": "index.js",
+  "scripts": {
+    "start": "autoreload-server -r '**.{html,css,js}' . 3000"
+  },
+  "author": "Kay Illner <kay.illner@gmail.com>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "simple-autoreload-server": "^0.2.15"
+  }
+}

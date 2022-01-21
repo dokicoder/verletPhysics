@@ -1,0 +1,18 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+#mainCanvas {
+  margin: 10px;
+  border: 1px dashed #00888866;
+  height: auto;
+}
