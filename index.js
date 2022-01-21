@@ -47,6 +47,10 @@ function update() {
 // applies physics to the points
 function updatePoints() {
   points.forEach((p) => {
+    if (p.fixed) {
+      return;
+    }
+
     vX = (p.x - p.prevX) * friction;
     vY = (p.y - p.prevY) * friction;
 
@@ -79,16 +83,44 @@ function updateSticks() {
     const offsetX = dX * 0.5 * relativeLengthChange;
     const offsetY = dY * 0.5 * relativeLengthChange;
 
-    s.p0.x += offsetX;
-    s.p0.y += offsetY;
+    // this is a strictly speaking more correct implementation,
+    // but the code below works just as well due to the iterations
+    /*
+    if (s.p0.fixed && s.p1.fixed) {
+      return;
+    }
+    // if either of the points is fixed,
+    // the other one has to compensate for the whole dLength, so we double the offsets again
+    else if (s.p0.fixed) {
+      s.p1.x += 2 * offsetX;
+      s.p1.y += 2 * offsetY;
 
-    s.p1.x -= offsetX;
-    s.p1.y -= offsetY;
+      return;
+    } else if (s.p1.fixed) {
+      s.p0.x -= 2 * offsetX;
+      s.p0.y -= 2 * offsetY;
+
+      return;
+    }
+    */
+
+    if (!s.p0.fixed) {
+      s.p0.x += offsetX;
+      s.p0.y += offsetY;
+    }
+    if (!s.p1.fixed) {
+      s.p1.x -= offsetX;
+      s.p1.y -= offsetY;
+    }
   });
 }
 
 function constrainBorders() {
   points.forEach((p) => {
+    if (p.fixed) {
+      return;
+    }
+
     // bounce at borders
     if (p.x > width - borderOffset) {
       p.x = width - borderOffset;
@@ -106,7 +138,11 @@ function constrainBorders() {
 
 function renderPoints() {
   points.forEach((p) => {
-    context.fillStyle = p === lastPointAdded ? 'red' : 'black';
+    if (p === lastPointAdded) {
+      context.fillStyle = 'red';
+    } else {
+      context.fillStyle = p.fixed ? 'aqua' : 'black';
+    }
 
     context.beginPath();
     context.arc(p.x, p.y, 2, 0, Math.PI * 2);
@@ -191,6 +227,8 @@ document.getElementById('mainCanvas').onclick = function (event) {
       y: canvasYpos,
       prevX: canvasXpos,
       prevY: canvasYpos,
+      // for testing: make first point fixture by default
+      fixed: points.length === 0,
     });
 
     if (points.length >= 2) {
