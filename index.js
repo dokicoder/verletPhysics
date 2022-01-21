@@ -4,12 +4,13 @@ let width = canvas.width;
 let height = canvas.height;
 let aspect = height / width;
 
+const NUM_VERLET_INTEGRATIONS = 3;
+const bounceDamping = 0.78;
+const gravity = 0.3;
+const friction = 0.992;
+
 const points = [];
 const sticks = [];
-
-const bounceDamping = 0.93;
-const gravity = 0.3;
-const friction = 0.994;
 
 function distance(p0, p1) {
   const dX = p1.x - p0.x;
@@ -20,9 +21,11 @@ function distance(p0, p1) {
 
 function update() {
   updatePoints();
-  updateSticks();
 
-  constrainBorders();
+  for (let i = 0; i < NUM_VERLET_INTEGRATIONS; ++i) {
+    updateSticks();
+    constrainBorders();
+  }
 
   context.clearRect(0, 0, width, height);
 
