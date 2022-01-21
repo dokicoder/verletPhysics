@@ -106,6 +106,8 @@ function constrainBorders() {
 
 function renderPoints() {
   points.forEach((p) => {
+    context.fillStyle = p === lastPointAdded ? 'red' : 'black';
+
     context.beginPath();
     context.arc(p.x, p.y, 2, 0, Math.PI * 2);
     context.fill();
