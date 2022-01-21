@@ -15,6 +15,10 @@ let simulationMode = 'init';
 let points = [];
 let sticks = [];
 
+// cannot use last element in array because we look for similar points and do not readd them
+// in this case we have to keep a reference to the last similar point
+let lastPointAdded = null;
+
 function distance(p0, p1) {
   const dX = p1.x - p0.x;
   const dY = p1.y - p0.y;
@@ -122,24 +126,7 @@ function init() {
   points = [];
   sticks = [];
 
-  points.push({
-    x: 15,
-    y: 95,
-    prevX: 14,
-    prevY: 94,
-  });
-  points.push({
-    x: 120,
-    y: 80,
-    prevX: 120,
-    prevY: 80,
-  });
-
-  sticks.push({
-    p0: points[0],
-    p1: points[1],
-    length: distance(points[0], points[1]),
-  });
+  lastPointAdded = null;
 }
 
 window.onload = function () {
@@ -183,18 +170,40 @@ document.getElementById('mainCanvas').onclick = function (event) {
   const canvasXpos = (clickXpos / rect.width) * 500;
   const canvasYpos = (clickYpos / rect.height) * 500;
 
-  points.push({
-    x: canvasXpos,
-    y: canvasYpos,
-    prevX: canvasXpos,
-    prevY: canvasYpos,
-  });
+  const similarPoint = points.find((p) => distance(p, { x: canvasXpos, y: canvasYpos }) < 4);
 
-  sticks.push({
-    p0: points[points.length - 2],
-    p1: points[points.length - 1],
-    length: distance(points[points.length - 2], points[points.length - 1]),
-  });
+  if (similarPoint && points.length) {
+    const p0 = lastPointAdded;
+    const p1 = similarPoint;
+
+    lastPointAdded = similarPoint;
+
+    sticks.push({
+      p0,
+      p1,
+      length: distance(p0, p1),
+    });
+  } else {
+    points.push({
+      x: canvasXpos,
+      y: canvasYpos,
+      prevX: canvasXpos,
+      prevY: canvasYpos,
+    });
+
+    if (points.length >= 2) {
+      const p0 = lastPointAdded;
+      const p1 = points[points.length - 1];
+
+      sticks.push({
+        p0,
+        p1,
+        length: distance(p0, p1),
+      });
+    }
+
+    lastPointAdded = points[points.length - 1];
+  }
 };
 
 /*
