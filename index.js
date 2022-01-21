@@ -175,6 +175,28 @@ function resetSimulation() {
   updateStartPauseButtonLabel();
 }
 
+document.getElementById('mainCanvas').onclick = function (event) {
+  const rect = event.target.getBoundingClientRect();
+  const clickXpos = event.clientX - rect.left;
+  const clickYpos = event.clientY - rect.top;
+
+  const canvasXpos = (clickXpos / rect.width) * 500;
+  const canvasYpos = (clickYpos / rect.height) * 500;
+
+  points.push({
+    x: canvasXpos,
+    y: canvasYpos,
+    prevX: canvasXpos,
+    prevY: canvasYpos,
+  });
+
+  sticks.push({
+    p0: points[points.length - 2],
+    p1: points[points.length - 1],
+    length: distance(points[points.length - 2], points[points.length - 1]),
+  });
+};
+
 /*
 window.onresize = function () {
   canvas.width = document.getElementById("main").width;
