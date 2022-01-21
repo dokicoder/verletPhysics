@@ -11,7 +11,10 @@
 
   <body>
     <main id="main">
-      <button id="simulationModeButton" onclick="toggleSimulation()">Start</button>
+      <div class="buttonGroup">
+        <button id="startPauseButton" onclick="toggleSimulation()">Start</button>
+        <button id="resetButton" onclick="resetSimulation()">Reset</button>
+      </div>
       <canvas id="mainCanvas" width="500" height="500"> </canvas>
       <script src="index.js"></script>
     </main>

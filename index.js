@@ -11,8 +11,8 @@ const friction = 0.992;
 
 let simulationMode = 'init';
 
-const points = [];
-const sticks = [];
+let points = [];
+let sticks = [];
 
 function distance(p0, p1) {
   const dX = p1.x - p0.x;
@@ -114,7 +114,10 @@ function renderSticks() {
   context.stroke();
 }
 
-window.onload = function () {
+function init() {
+  points = [];
+  sticks = [];
+
   points.push({
     x: 15,
     y: 95,
@@ -133,10 +136,23 @@ window.onload = function () {
     p1: points[1],
     length: distance(points[0], points[1]),
   });
+}
+
+window.onload = function () {
+  init();
 
   // start render loop
   update();
 };
+
+function updateStartPauseButtonLabel() {
+  document.getElementById('startPauseButton').innerHTML =
+    {
+      init: 'Start',
+      paused: 'Resume',
+      running: 'Pause',
+    }[simulationMode] || 'missing label';
+}
 
 function toggleSimulation() {
   if (simulationMode === 'init' || simulationMode === 'paused') {
@@ -145,13 +161,16 @@ function toggleSimulation() {
     simulationMode = 'paused';
   }
 
-  document.getElementById('simulationModeButton').innerHTML =
-    {
-      init: 'Start',
-      paused: 'Resume',
-      running: 'Pause',
-    }[simulationMode] || 'missing label';
+  updateStartPauseButtonLabel();
 }
+
+function resetSimulation() {
+  init();
+  simulationMode = 'init';
+
+  updateStartPauseButtonLabel();
+}
+
 /*
 window.onresize = function () {
   canvas.width = document.getElementById("main").width;

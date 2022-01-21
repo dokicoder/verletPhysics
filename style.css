@@ -17,9 +17,12 @@ main {
   height: auto;
 }
 
-button#simulationModeButton {
+.buttonGroup {
   position: absolute;
   left: 20px;
   top: 20px;
+}
+
+.buttonGroup button {
   padding: 15px 30px;
 }
