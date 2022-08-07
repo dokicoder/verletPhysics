@@ -6,20 +6,34 @@ let aspect = height / width;
 
 const NUM_VERLET_INTEGRATIONS = 3;
 const bounceDamping = 0.78;
-const gravity = 0.3;
+const gravity = 0.04;
 const friction = 0.992;
 const borderOffset = 3;
 
+let pullStrength = 0.001;
+const maxPullG = 0.04;
+
 let points = [];
 let sticks = [];
+
+let activePoint = undefined;
+let pullPosition = undefined;
 
 // ui state flags
 let simulationMode = 'init';
 let autoChainMode = true;
 
+let useGravity = true;
+
 // cannot use last element in array because we look for similar points and do not readd them
 // in this case we have to keep a reference to the last similar point
 let lastPointAdded = null;
+
+const lerp = (x, y, t) => (1 - t) * x + t * y;
+
+function length({ x, y }) {
+  return Math.sqrt(x * x + y * y);
+}
 
 function distance(p0, p1) {
   const dX = p1.x - p0.x;
@@ -42,6 +56,7 @@ function update() {
 
   renderSticks();
   renderPoints();
+  renderPullGizmo();
 
   requestAnimationFrame(update);
 }
@@ -67,8 +82,46 @@ function updatePoints() {
     // TODO: convert between coordinate systems so we cab substract gravity and this becomes less confusing
     // MIND: gravity is an accelerating force, so it should alter velocity to be strict
     // this will result in the same though since the change in position will result in reduced gravity in next update
-    p.y += gravity;
+
+    if (useGravity) {
+      p.y += gravity;
+    }
   });
+
+  if (pullPosition) {
+    let bestDistance = Infinity;
+    let updatedActivePoint = undefined;
+
+    points.forEach((p) => {
+      const pointDistance = distance(p, pullPosition);
+      if (pointDistance < bestDistance) {
+        bestDistance = pointDistance;
+        updatedActivePoint = p;
+      }
+    });
+
+    activePoint = updatedActivePoint;
+  }
+
+  if (activePoint && pullPosition) {
+    const pullVec = {
+      x: (pullPosition.x - activePoint.x) * pullStrength,
+      y: (pullPosition.y - activePoint.y) * pullStrength,
+    };
+
+    const len = length(pullVec);
+
+    if (len > maxPullG) {
+      pullVec.x = (pullVec.x / len) * maxPullG;
+      pullVec.y = (pullVec.y / len) * maxPullG;
+    }
+
+    activePoint.x += pullVec.x;
+    activePoint.y += pullVec.y;
+
+    //activePoint.x = lerp(activePoint.x, pullPosition.x, pullStrength);
+    //activePoint.y = lerp(activePoint.y, pullPosition.y, pullStrength);
+  }
 }
 
 // constraints point position with the sticks
@@ -152,12 +205,40 @@ function renderPoints() {
   });
 }
 
+function renderPullGizmo() {
+  if (simulationMode === 'running') {
+    if (activePoint) {
+      context.fillStyle = 'orange';
+
+      context.beginPath();
+      context.arc(activePoint.x, activePoint.y, 2, 0, Math.PI * 2);
+      context.fill();
+    }
+    if (pullPosition) {
+      context.fillStyle = 'green';
+
+      context.beginPath();
+      context.arc(pullPosition.x, pullPosition.y, 2, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+}
+
 function renderSticks() {
   context.beginPath();
   sticks.forEach((s) => {
     context.moveTo(s.p0.x, s.p0.y);
     context.lineTo(s.p1.x, s.p1.y);
   });
+
+  context.stroke();
+}
+
+function renderMoveVector() {
+  context.beginPath();
+
+  context.moveTo(points[0]);
+  context.lineTo(s.p1.x, s.p1.y);
 
   context.stroke();
 }
@@ -185,6 +266,10 @@ function updateStartPauseButtonLabel() {
     }[simulationMode] || 'missing label';
 }
 
+function updateGravityButtonLabel() {
+  document.getElementById('toggleGravity').innerHTML = useGravity ? 'Gravity: <b>on</b>' : 'Gravity: <b>off</b>';
+}
+
 function toggleSimulation() {
   if (simulationMode === 'init' || simulationMode === 'paused') {
     simulationMode = 'running';
@@ -200,6 +285,13 @@ function resetSimulation() {
   simulationMode = 'init';
 
   updateStartPauseButtonLabel();
+  updateGravityButtonLabel();
+}
+
+function toggleGravity() {
+  useGravity = !useGravity;
+
+  updateGravityButtonLabel();
 }
 
 document.getElementById('mainCanvas').onclick = function (event) {
@@ -211,6 +303,21 @@ document.getElementById('mainCanvas').onclick = function (event) {
   const canvasYpos = (clickYpos / rect.height) * 500;
 
   const similarPoint = points.find((p) => distance(p, { x: canvasXpos, y: canvasYpos }) < 4);
+
+  if (simulationMode === 'running') {
+    if (similarPoint) {
+      activePoint = similarPoint;
+    } else {
+      pullPosition = {
+        x: canvasXpos,
+        y: canvasYpos,
+        prevX: canvasXpos,
+        prevY: canvasYpos,
+      };
+    }
+
+    return;
+  }
 
   if (similarPoint && points.length) {
     if (autoChainMode) {
@@ -232,7 +339,7 @@ document.getElementById('mainCanvas').onclick = function (event) {
       prevX: canvasXpos,
       prevY: canvasYpos,
       // for testing: make first point fixture by default
-      fixed: points.length === 0,
+      fixed: false, //points.length === 0,
     });
 
     if (points.length >= 2) {
