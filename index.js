@@ -63,7 +63,7 @@ function update() {
 
 // applies physics to the points
 function updatePoints() {
-  points.forEach((p) => {
+  points.forEach(p => {
     if (p.fixed) {
       return;
     }
@@ -79,9 +79,9 @@ function updatePoints() {
     p.y += vY;
 
     // apply gravity
-    // TODO: convert between coordinate systems so we cab substract gravity and this becomes less confusing
+    // TODO: convert between coordinate systems so we can subtract gravity and this becomes less confusing
     // MIND: gravity is an accelerating force, so it should alter velocity to be strict
-    // this will result in the same though since the change in position will result in reduced gravity in next update
+    // thishere will have the same end result since the change in position will result in reduced gravity during next update
 
     if (useGravity) {
       p.y += gravity;
@@ -92,7 +92,7 @@ function updatePoints() {
     let bestDistance = Infinity;
     let updatedActivePoint = undefined;
 
-    points.forEach((p) => {
+    points.forEach(p => {
       const pointDistance = distance(p, pullPosition);
       if (pointDistance < bestDistance) {
         bestDistance = pointDistance;
@@ -126,7 +126,7 @@ function updatePoints() {
 
 // constraints point position with the sticks
 function updateSticks() {
-  sticks.forEach((s) => {
+  sticks.forEach(s => {
     const dX = s.p1.x - s.p0.x;
     const dY = s.p1.y - s.p0.y;
 
@@ -171,7 +171,7 @@ function updateSticks() {
 }
 
 function constrainBorders() {
-  points.forEach((p) => {
+  points.forEach(p => {
     if (p.fixed) {
       return;
     }
@@ -192,7 +192,7 @@ function constrainBorders() {
 }
 
 function renderPoints() {
-  points.forEach((p) => {
+  points.forEach(p => {
     if (p === lastPointAdded) {
       context.fillStyle = 'red';
     } else {
@@ -226,7 +226,7 @@ function renderPullGizmo() {
 
 function renderSticks() {
   context.beginPath();
-  sticks.forEach((s) => {
+  sticks.forEach(s => {
     context.moveTo(s.p0.x, s.p0.y);
     context.lineTo(s.p1.x, s.p1.y);
   });
@@ -267,7 +267,9 @@ function updateStartPauseButtonLabel() {
 }
 
 function updateGravityButtonLabel() {
-  document.getElementById('toggleGravity').innerHTML = useGravity ? 'Gravity: <b>on</b>' : 'Gravity: <b>off</b>';
+  document.getElementById('toggleGravity').innerHTML = useGravity
+    ? 'Gravity: <b>on</b>'
+    : 'Gravity: <b>off</b>';
 }
 
 function toggleSimulation() {
@@ -302,7 +304,9 @@ document.getElementById('mainCanvas').onclick = function (event) {
   const canvasXpos = (clickXpos / rect.width) * 500;
   const canvasYpos = (clickYpos / rect.height) * 500;
 
-  const similarPoint = points.find((p) => distance(p, { x: canvasXpos, y: canvasYpos }) < 4);
+  const similarPoint = points.find(
+    p => distance(p, { x: canvasXpos, y: canvasYpos }) < 4,
+  );
 
   if (simulationMode === 'running') {
     if (similarPoint) {
@@ -339,7 +343,7 @@ document.getElementById('mainCanvas').onclick = function (event) {
       prevX: canvasXpos,
       prevY: canvasYpos,
       // for testing: make first point fixture by default
-      fixed: false, //points.length === 0,
+      fixed: points.length === 0,
     });
 
     if (points.length >= 2) {
