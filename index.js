@@ -29,6 +29,17 @@ let useGravity = true;
 // in this case we have to keep a reference to the last similar point
 let lastPointAdded = null;
 
+context.lineWidth = 3;
+
+function resizeCanvas() {
+  canvas.style.width = window.innerWidth - 20;
+  canvas.style.width = window.innerHeight - 20;
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+resizeCanvas();
+
 const lerp = (x, y, t) => (1 - t) * x + t * y;
 
 function length({ x, y }) {
@@ -200,7 +211,7 @@ function renderPoints() {
     }
 
     context.beginPath();
-    context.arc(p.x, p.y, 2, 0, Math.PI * 2);
+    context.arc(p.x, p.y, 4, 0, Math.PI * 2);
     context.fill();
   });
 }
@@ -267,9 +278,7 @@ function updateStartPauseButtonLabel() {
 }
 
 function updateGravityButtonLabel() {
-  document.getElementById('toggleGravity').innerHTML = useGravity
-    ? 'Gravity: <b>on</b>'
-    : 'Gravity: <b>off</b>';
+  document.getElementById('toggleGravity').innerHTML = useGravity ? 'Gravity: <b>on</b>' : 'Gravity: <b>off</b>';
 }
 
 function toggleSimulation() {
@@ -301,12 +310,10 @@ document.getElementById('mainCanvas').onclick = function (event) {
   const clickXpos = event.clientX - rect.left;
   const clickYpos = event.clientY - rect.top;
 
-  const canvasXpos = (clickXpos / rect.width) * 500;
-  const canvasYpos = (clickYpos / rect.height) * 500;
+  const canvasXpos = (clickXpos / rect.width) * 1200;
+  const canvasYpos = (clickYpos / rect.height) * 1200;
 
-  const similarPoint = points.find(
-    p => distance(p, { x: canvasXpos, y: canvasYpos }) < 4,
-  );
+  const similarPoint = points.find(p => distance(p, { x: canvasXpos, y: canvasYpos }) < 4);
 
   if (simulationMode === 'running') {
     if (similarPoint) {
@@ -366,13 +373,3 @@ document.getElementById('mainCanvas').onclick = function (event) {
 const toggleChainMode = () => {
   autoChainMode = !autoChainMode;
 };
-
-/*
-window.onresize = function () {
-  canvas.width = document.getElementById("main").width;
-  canvas.height = document.getElementById("main").height;
-  width = canvas.width;
-  height = canvas.height;
-  aspect = height / width;
-};
-*/

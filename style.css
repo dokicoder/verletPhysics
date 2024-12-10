@@ -6,17 +6,18 @@
   font-family: sans-serif;
 }
 
-main {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
 }
 
 #mainCanvas {
-  margin: 10px;
-  border: 1px dashed #00888866;
-  height: auto;
+  border: 3px dashed #00888866;
+  margin-left: 10px;
+  margin-top: 10px;
 }
 
 .buttonGroup {
