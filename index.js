@@ -92,11 +92,11 @@ function updatePoints() {
     // apply gravity
     // TODO: convert between coordinate systems so we can subtract gravity and this becomes less confusing
     // MIND: gravity is an accelerating force, so it should alter velocity to be strict
-    // thishere will have the same end result since the change in position will result in reduced gravity during next update
+    // this here will have the same end result since the change in position will result in reduced gravity during next update
 
-    if (useGravity) {
-      p.y += gravity;
-    }
+    // if (useGravity) {
+    //   p.y += gravity;
+    // }
   });
 
   if (pullPosition) {
@@ -259,36 +259,46 @@ function renderMoveVector() {
   context.stroke();
 }
 
-function addStartPoint(angle, radius) {
-  const x = Math.cos(angle) * radius + 600;
-  const y = Math.sin(angle) * radius + 600;
+function createStartPoint(angle, radius) {
+  const x = Math.cos(angle) * radius + 600 - 50 + Math.random() * 100;
+  const y = Math.sin(angle) * radius + 600 - 50 + Math.random() * 100;
 
   const speedInferScale = 0.6;
 
   const prevX = Math.cos(angle) * speedInferScale * radius + 600;
   const prevY = Math.sin(angle) * speedInferScale * radius + 600;
 
-  points.push({
+  return {
     x,
     y,
     prevX,
     prevY,
-  });
+  };
 }
 
 function init() {
   points = [];
   sticks = [];
 
-  points.push({
+  const centerPoint = {
     x: 600,
     y: 600,
     prevX: 600,
     prevY: 600,
-  });
+  };
+
+  points.push(centerPoint);
 
   for (let i = 0; i < 10; ++i) {
-    addStartPoint((Math.PI / 5) * i, 100);
+    const newPoint = createStartPoint((Math.PI / 5) * i, 200);
+
+    points.push(newPoint);
+
+    sticks.push({
+      p0: centerPoint,
+      p1: newPoint,
+      length: 200,
+    });
   }
 
   lastPointAdded = null;
@@ -338,71 +348,71 @@ function toggleGravity() {
   updateGravityButtonLabel();
 }
 
-// document.getElementById('mainCanvas').onclick = function (event) {
-//   const rect = event.target.getBoundingClientRect();
-//   const clickXpos = event.clientX - rect.left;
-//   const clickYpos = event.clientY - rect.top;
+document.getElementById('mainCanvas').onclick = function (event) {
+  const rect = event.target.getBoundingClientRect();
+  const clickXpos = event.clientX - rect.left;
+  const clickYpos = event.clientY - rect.top;
 
-//   const canvasXpos = (clickXpos / rect.width) * 1200;
-//   const canvasYpos = (clickYpos / rect.height) * 1200;
+  const canvasXpos = (clickXpos / rect.width) * 1200;
+  const canvasYpos = (clickYpos / rect.height) * 1200;
 
-//   const similarPoint = points.find(p => distance(p, { x: canvasXpos, y: canvasYpos }) < 4);
+  const similarPoint = points.find(p => distance(p, { x: canvasXpos, y: canvasYpos }) < 4);
 
-//   if (simulationMode === 'running') {
-//     if (similarPoint) {
-//       activePoint = similarPoint;
-//     } else {
-//       pullPosition = {
-//         x: canvasXpos,
-//         y: canvasYpos,
-//         prevX: canvasXpos,
-//         prevY: canvasYpos,
-//       };
-//     }
+  if (simulationMode === 'running') {
+    if (similarPoint) {
+      activePoint = similarPoint;
+    } else {
+      pullPosition = {
+        x: canvasXpos,
+        y: canvasYpos,
+        prevX: canvasXpos,
+        prevY: canvasYpos,
+      };
+    }
 
-//     return;
-//   }
+    return;
+  }
 
-//   if (similarPoint && points.length) {
-//     if (autoChainMode) {
-//       const p0 = lastPointAdded;
-//       const p1 = similarPoint;
+  // if (similarPoint && points.length) {
+  //   if (autoChainMode) {
+  //     const p0 = lastPointAdded;
+  //     const p1 = similarPoint;
 
-//       sticks.push({
-//         p0,
-//         p1,
-//         length: distance(p0, p1),
-//       });
-//     }
+  //     sticks.push({
+  //       p0,
+  //       p1,
+  //       length: distance(p0, p1),
+  //     });
+  //   }
 
-//     lastPointAdded = similarPoint;
-//   } else {
-//     points.push({
-//       x: canvasXpos,
-//       y: canvasYpos,
-//       prevX: canvasXpos,
-//       prevY: canvasYpos,
-//       // for testing: make first point fixture by default
-//       fixed: points.length === 0,
-//     });
+  //   lastPointAdded = similarPoint;
+  // } else {
+  //   points.push({
+  //     x: canvasXpos,
+  //     y: canvasYpos,
+  //     prevX: canvasXpos,
+  //     prevY: canvasYpos,
+  //     // for testing: make first point fixture by default
+  //     fixed: points.length === 0,
+  //   });
 
-//     if (points.length >= 2) {
-//       if (autoChainMode) {
-//         const p0 = lastPointAdded;
-//         const p1 = points[points.length - 1];
+  //   if (points.length >= 2) {
+  //     if (autoChainMode) {
+  //       const p0 = lastPointAdded;
+  //       const p1 = points[points.length - 1];
 
-//         sticks.push({
-//           p0,
-//           p1,
-//           length: distance(p0, p1),
-//         });
-//       }
-//     }
+  //       sticks.push({
+  //         p0,
+  //         p1,
+  //         length: distance(p0, p1),
+  //       });
+  //     }
+  //   }
 
-//     lastPointAdded = points[points.length - 1];
-//   }
-// };
+  //   lastPointAdded = points[points.length - 1];
+  // }
+};
 
-// const toggleChainMode = () => {
-//   autoChainMode = !autoChainMode;
-// };
+const toggleChainMode = () => {
+  autoChainMode = !autoChainMode;
+};
