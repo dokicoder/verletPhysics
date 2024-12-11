@@ -13,7 +13,27 @@
     <div class="buttonGroup">
       <button id="startPauseButton" onclick="toggleSimulation()">Start</button>
       <button id="resetButton" onclick="resetSimulation()">Reset</button>
-      <button id="toggleGravity" onclick="toggleGravity()">Gravity: <b>on</b></button>
+      <button id="toggleGravity" onclick="toggleGravity()">Gravity: <b>off</b></button>
+    </div>
+
+    <div class="sliderGroup">
+      <label id="sliderGravityLabel" for="sliderGravity"> Gravity: </label>
+      <input type="range" min="-0.3" max="0.3" step="0.001" id="sliderGravity" name="sliderGravity" />
+
+      <label id="sliderFrictionLabel" for="sliderFriction"> Friction: </label>
+      <input type="range" min="0" max="0.3" step="0.001" id="sliderFriction" name="sliderFriction" />
+
+      <label id="stickCorrectionForceLabel" for="stickCorrectionForce"> Stick correction force: </label>
+      <input type="range" id="stickCorrectionForce" min="0" max="1" step="0.001" name="stickCorrectionForce" />
+
+      <label id="repellentForceLabel" for="repellentForce"> Repellent force: </label>
+      <input type="range" id="repellentForce" name="repellentForce" min="100" max="20000" step="1" />
+
+      <label id="targetPullForceLabel" for="targetPullForce"> Target pull force: </label>
+      <input type="range" id="targetPullForce" name="targetPullForce" min="0.0" max="0.1" step="0.0001" />
+
+      <label id="numVerletIterationsLabel" for="numVerletIterations"> Verlet iterations: </label>
+      <input type="range" id="numVerletIterations" name="numVerletIterations" min="1" max="20" />
     </div>
 
     <canvas id="mainCanvas" width="1200" height="1200"></canvas>

@@ -4,15 +4,17 @@ let width = canvas.width;
 let height = canvas.height;
 let aspect = height / width;
 
-const NUM_VERLET_INTEGRATIONS = 3;
+let NUM_VERLET_ITERATIONS = 3;
+let repellentForce = 500;
 
-const bounceDamping = 0.78;
-const gravity = 0.04;
-const friction = 0.989;
+let stickCorrectionForce = 0.001;
+
+const wallBounceDamping = 0.78;
+let gravity = 0.04;
+let friction = 0.011;
 const borderOffset = 3;
 
-let pullStrength = 0.001;
-const maxPullG = 0.04;
+let targetPullForce = 0.001;
 
 let points = [];
 let sticks = [];
@@ -31,6 +33,56 @@ let useGravity = false;
 let lastPointAdded = null;
 
 context.lineWidth = 3;
+
+function addListeners() {
+  document.getElementById('sliderGravityLabel').innerHTML = `Gravity: <b>${gravity}</b>`;
+  document.getElementById('sliderGravity').value = gravity;
+  document.getElementById('sliderGravity').addEventListener('input', event => {
+    gravity = Number(event.target.value);
+    document.getElementById('sliderGravityLabel').innerHTML = `Gravity: <b>${event.target.value}</b>`;
+  });
+
+  document.getElementById('sliderFrictionLabel').innerHTML = `Friction: <b>${friction}</b>`;
+  document.getElementById('sliderFriction').value = friction;
+  document.getElementById('sliderFriction').addEventListener('input', event => {
+    friction = Number(event.target.value);
+    document.getElementById('sliderFrictionLabel').innerHTML = `Friction: <b>${event.target.value}</b>`;
+  });
+
+  document.getElementById('repellentForceLabel').innerHTML = `Repellent force: <b>${repellentForce}</b>`;
+  document.getElementById('repellentForce').value = repellentForce;
+  document.getElementById('repellentForce').addEventListener('input', event => {
+    repellentForce = Number(event.target.value);
+    document.getElementById('repellentForceLabel').innerHTML = `Repellent force: <b>${event.target.value}</b>`;
+  });
+
+  document.getElementById('targetPullForceLabel').innerHTML = `Target pull force: <b>${targetPullForce}</b>`;
+  document.getElementById('targetPullForce').value = targetPullForce;
+  document.getElementById('targetPullForce').addEventListener('input', event => {
+    targetPullForce = Number(event.target.value);
+    document.getElementById('targetPullForceLabel').innerHTML = `Target pull force: <b>${event.target.value}</b>`;
+  });
+
+  document.getElementById(
+    'stickCorrectionForceLabel',
+  ).innerHTML = `Stick correction force: <b>${stickCorrectionForce}</b>`;
+  document.getElementById('stickCorrectionForce').value = targetPullForce;
+  document.getElementById('stickCorrectionForce').addEventListener('input', event => {
+    stickCorrectionForce = Number(event.target.value);
+    document.getElementById(
+      'stickCorrectionForceLabel',
+    ).innerHTML = `Stick correction force: <b>${event.target.value}</b>`;
+  });
+
+  document.getElementById('numVerletIterationsLabel').innerHTML = `Verlet iterations: <b>${NUM_VERLET_ITERATIONS}</b>`;
+  document.getElementById('numVerletIterations').value = NUM_VERLET_ITERATIONS;
+  document.getElementById('numVerletIterations').addEventListener('input', event => {
+    NUM_VERLET_ITERATIONS = Number(event.target.value);
+    document.getElementById('numVerletIterationsLabel').innerHTML = `Verlet iterations: <b>${event.target.value}</b>`;
+  });
+}
+
+addListeners();
 
 function resizeCanvas() {
   canvas.style.width = window.innerWidth - 20;
@@ -58,7 +110,7 @@ function update() {
   if (simulationMode === 'running') {
     updatePoints();
 
-    for (let i = 0; i < NUM_VERLET_INTEGRATIONS; ++i) {
+    for (let i = 0; i < NUM_VERLET_ITERATIONS; ++i) {
       updateSticks();
       constrainBorders();
     }
@@ -88,6 +140,11 @@ function updatePoints() {
         return;
       }
 
+      // TODO: we check points pairwise, but also, we check each pair twice, as Pa, Pb and as Pb, Pa
+      if (p.isCenter || otherP.isCenter) {
+        return;
+      }
+
       const dist = distance(p, otherP);
 
       // heuristic for same point, could be 0, but we choose our parameters so that initially points do not coincide
@@ -95,17 +152,17 @@ function updatePoints() {
         return;
       }
 
-      const distractionForce = 500 / (dist * dist);
+      const repellentVector = repellentForce / (dist * dist);
 
-      const pullVecX = ((p.x - otherP.x) / dist) * distractionForce;
-      const pullVecY = ((p.y - otherP.y) / dist) * distractionForce;
+      const pullVecX = ((p.x - otherP.x) / dist) * repellentVector;
+      const pullVecY = ((p.y - otherP.y) / dist) * repellentVector;
 
       vX += pullVecX;
       vY += pullVecY;
     });
 
-    vX *= friction;
-    vY *= friction;
+    vX *= 1 - friction;
+    vY *= 1 - friction;
 
     p.prevX = p.x;
     p.prevY = p.y;
@@ -141,16 +198,16 @@ function updatePoints() {
 
   if (activePoint && pullPosition) {
     const pullVec = {
-      x: (pullPosition.x - activePoint.x) * pullStrength,
-      y: (pullPosition.y - activePoint.y) * pullStrength,
+      x: (pullPosition.x - activePoint.x) * targetPullForce,
+      y: (pullPosition.y - activePoint.y) * targetPullForce,
     };
 
     const len = length(pullVec);
 
-    if (len > maxPullG) {
-      pullVec.x = (pullVec.x / len) * maxPullG;
-      pullVec.y = (pullVec.y / len) * maxPullG;
-    }
+    // if (len > maxPullG) {
+    //   pullVec.x = (pullVec.x / len) * maxPullG;
+    //   pullVec.y = (pullVec.y / len) * maxPullG;
+    // }
 
     activePoint.x += pullVec.x;
     activePoint.y += pullVec.y;
@@ -171,8 +228,8 @@ function updateSticks() {
 
     const relativeLengthChange = dLength / currentLength;
 
-    const offsetX = dX * 0.001 * relativeLengthChange;
-    const offsetY = dY * 0.001 * relativeLengthChange;
+    const offsetX = dX * stickCorrectionForce * relativeLengthChange;
+    const offsetY = dY * stickCorrectionForce * relativeLengthChange;
 
     // this is a strictly speaking more correct implementation,
     // but the code below works just as well due to the iterations
@@ -215,19 +272,19 @@ function constrainBorders() {
     // bounce at borders
     if (p.x > width - borderOffset) {
       p.x = width - borderOffset;
-      p.prevX = p.x + vX * bounceDamping;
+      p.prevX = p.x + vX * wallBounceDamping;
     }
     if (p.x < borderOffset) {
       p.x = borderOffset;
-      p.prevX = p.x + vX * bounceDamping;
+      p.prevX = p.x + vX * wallBounceDamping;
     }
     if (p.y > height - borderOffset) {
       p.y = height - borderOffset;
-      p.prevY = p.y + vY * bounceDamping;
+      p.prevY = p.y + vY * wallBounceDamping;
     }
     if (p.y < borderOffset) {
       p.y = borderOffset;
-      p.prevY = p.y + vY * bounceDamping;
+      p.prevY = p.y + vY * wallBounceDamping;
     }
   });
 }
@@ -310,6 +367,7 @@ function init() {
     y: 600,
     prevX: 600,
     prevY: 600,
+    isCenter: true,
   };
 
   points.push(centerPoint);
@@ -383,16 +441,21 @@ document.getElementById('mainCanvas').onclick = function (event) {
 
   const similarPoint = points.find(p => distance(p, { x: canvasXpos, y: canvasYpos }) < 4);
 
+  const updatedPullPosition = {
+    x: canvasXpos,
+    y: canvasYpos,
+    prevX: canvasXpos,
+    prevY: canvasYpos,
+  };
+
   if (simulationMode === 'running') {
     if (similarPoint) {
       activePoint = similarPoint;
+    }
+    if (pullPosition && distance(updatedPullPosition, pullPosition) < 7) {
+      pullPosition = undefined;
     } else {
-      pullPosition = {
-        x: canvasXpos,
-        y: canvasYpos,
-        prevX: canvasXpos,
-        prevY: canvasYpos,
-      };
+      pullPosition = updatedPullPosition;
     }
 
     return;

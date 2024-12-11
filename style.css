@@ -26,6 +26,15 @@ body {
   top: 20px;
 }
 
+.sliderGroup {
+  position: absolute;
+  left: 20px;
+  top: 90px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .buttonGroup button {
   padding: 15px 30px;
 }
