@@ -5,6 +5,7 @@ let height = canvas.height;
 let aspect = height / width;
 
 const NUM_VERLET_INTEGRATIONS = 3;
+
 const bounceDamping = 0.78;
 const gravity = 0.04;
 const friction = 0.989;
@@ -96,8 +97,6 @@ function updatePoints() {
 
       const distractionForce = 500 / (dist * dist);
 
-      console.log(distractionForce);
-
       const pullVecX = ((p.x - otherP.x) / dist) * distractionForce;
       const pullVecY = ((p.y - otherP.y) / dist) * distractionForce;
 
@@ -120,9 +119,9 @@ function updatePoints() {
     // MIND: gravity is an accelerating force, so it should alter velocity to be strict
     // this here will have the same end result since the change in position will result in reduced gravity during next update
 
-    // if (useGravity) {
-    //   p.y += gravity;
-    // }
+    if (useGravity) {
+      p.y += gravity;
+    }
   });
 
   if (pullPosition) {
@@ -172,8 +171,8 @@ function updateSticks() {
 
     const relativeLengthChange = dLength / currentLength;
 
-    const offsetX = dX * 0.5 * relativeLengthChange;
-    const offsetY = dY * 0.5 * relativeLengthChange;
+    const offsetX = dX * 0.001 * relativeLengthChange;
+    const offsetY = dY * 0.001 * relativeLengthChange;
 
     // this is a strictly speaking more correct implementation,
     // but the code below works just as well due to the iterations
@@ -398,45 +397,6 @@ document.getElementById('mainCanvas').onclick = function (event) {
 
     return;
   }
-
-  // if (similarPoint && points.length) {
-  //   if (autoChainMode) {
-  //     const p0 = lastPointAdded;
-  //     const p1 = similarPoint;
-
-  //     sticks.push({
-  //       p0,
-  //       p1,
-  //       length: distance(p0, p1),
-  //     });
-  //   }
-
-  //   lastPointAdded = similarPoint;
-  // } else {
-  //   points.push({
-  //     x: canvasXpos,
-  //     y: canvasYpos,
-  //     prevX: canvasXpos,
-  //     prevY: canvasYpos,
-  //     // for testing: make first point fixture by default
-  //     fixed: points.length === 0,
-  //   });
-
-  //   if (points.length >= 2) {
-  //     if (autoChainMode) {
-  //       const p0 = lastPointAdded;
-  //       const p1 = points[points.length - 1];
-
-  //       sticks.push({
-  //         p0,
-  //         p1,
-  //         length: distance(p0, p1),
-  //       });
-  //     }
-  //   }
-
-  //   lastPointAdded = points[points.length - 1];
-  // }
 };
 
 const toggleChainMode = () => {
