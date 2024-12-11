@@ -79,8 +79,34 @@ function updatePoints() {
       return;
     }
 
-    vX = (p.x - p.prevX) * friction;
-    vY = (p.y - p.prevY) * friction;
+    vX = p.x - p.prevX;
+    vY = p.y - p.prevY;
+
+    points.forEach(otherP => {
+      if (otherP.x === p.x && otherP.y === p.y) {
+        return;
+      }
+
+      const dist = distance(p, otherP);
+
+      // heuristic for same point, could be 0, but we choose our parameters so that initially points do not coincide
+      if (dist < 1 || isNaN(dist)) {
+        return;
+      }
+
+      const distractionForce = 500 / (dist * dist);
+
+      console.log(distractionForce);
+
+      const pullVecX = ((p.x - otherP.x) / dist) * distractionForce;
+      const pullVecY = ((p.y - otherP.y) / dist) * distractionForce;
+
+      vX += pullVecX;
+      vY += pullVecY;
+    });
+
+    vX *= friction;
+    vY *= friction;
 
     p.prevX = p.x;
     p.prevY = p.y;
@@ -265,14 +291,14 @@ function createStartPoint(angle, radius) {
 
   const speedInferScale = 0.6;
 
-  const prevX = Math.cos(angle) * speedInferScale * radius + 600;
-  const prevY = Math.sin(angle) * speedInferScale * radius + 600;
+  // const prevX = Math.cos(angle) * speedInferScale * radius + 600;
+  // const prevY = Math.sin(angle) * speedInferScale * radius + 600;
 
   return {
     x,
     y,
-    prevX,
-    prevY,
+    prevX: x,
+    prevY: y,
   };
 }
 
