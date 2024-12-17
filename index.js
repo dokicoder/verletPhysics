@@ -5,16 +5,16 @@ let height = canvas.height;
 let aspect = height / width;
 
 let NUM_VERLET_ITERATIONS = 3;
-let repellentForce = 500;
+let repellentForce = 0.000001;
 
 let stickCorrectionForce = 0.001;
 
 const wallBounceDamping = 0.78;
-let gravity = 0.04;
-let friction = 0.011;
-const borderOffset = 3;
+let gravity = 0.00003;
+let friction = 0.01;
+const borderOffset = 0.0001;
 
-let targetPullForce = 0.001;
+let targetPullForce = 0.0;
 
 let points = [];
 let sticks = [];
@@ -125,6 +125,18 @@ function update() {
   requestAnimationFrame(update);
 }
 
+function transformPointForCanvasBox(p, width, height) {
+  const { x, y, prevX, prevY } = p;
+
+  return {
+    ...p,
+    x: x * width + 0.5 * width,
+    y: y * height + 0.5 * height,
+    prevX: prevX * width + 0.5 * width,
+    prevY: prevY * height + 0.5 * height,
+  };
+}
+
 // applies physics to the points
 function updatePoints() {
   let pairCount = 0;
@@ -159,9 +171,9 @@ function updatePoints() {
       const dist = distance(p, otherP);
 
       // heuristic for same point, could be 0, but we choose our parameters so that initially points do not coincide
-      if (dist < 1 || isNaN(dist)) {
-        return;
-      }
+      // if (dist < 1 || isNaN(dist)) {
+      //   return;
+      // }
 
       const repellentVector = repellentForce / (dist * dist);
 
@@ -283,21 +295,23 @@ function constrainBorders() {
     }
 
     // bounce at borders
-    if (p.x > width - borderOffset) {
-      p.x = width - borderOffset;
+    if (p.x > 0.5 - borderOffset) {
+      p.x = 0.5 - borderOffset;
       p.prevX = p.x + vX * wallBounceDamping;
     }
-    if (p.x < borderOffset) {
-      p.x = borderOffset;
+    if (p.x < -0.5 + borderOffset) {
+      p.x = -0.5 + borderOffset;
       p.prevX = p.x + vX * wallBounceDamping;
     }
-    if (p.y > height - borderOffset) {
-      p.y = height - borderOffset;
+    if (p.y > 0.5 - borderOffset) {
+      p.y = 0.5 - borderOffset;
       p.prevY = p.y + vY * wallBounceDamping;
+      console.log('C');
     }
-    if (p.y < borderOffset) {
-      p.y = borderOffset;
+    if (p.y < -0.5 + borderOffset) {
+      p.y = -0.5 + borderOffset;
       p.prevY = p.y + vY * wallBounceDamping;
+      console.log('D');
     }
   });
 }
@@ -310,8 +324,10 @@ function renderPoints() {
       context.fillStyle = p.fixed ? 'aqua' : 'black';
     }
 
+    const { x, y } = transformPointForCanvasBox(p, 1200, 1200);
+
     context.beginPath();
-    context.arc(p.x, p.y, 4, 0, Math.PI * 2);
+    context.arc(x, y, 4, 0, Math.PI * 2);
     context.fill();
   });
 }
@@ -321,15 +337,19 @@ function renderPullGizmo() {
     if (activePoint) {
       context.fillStyle = 'orange';
 
+      const { x, y } = transformPointForCanvasBox(activePoint, 1200, 1200);
+
       context.beginPath();
-      context.arc(activePoint.x, activePoint.y, 2, 0, Math.PI * 2);
+      context.arc(x, y, 2, 0, Math.PI * 2);
       context.fill();
     }
     if (pullPosition) {
       context.fillStyle = 'green';
 
+      const { x, y } = transformPointForCanvasBox(pullPosition, 1200, 1200);
+
       context.beginPath();
-      context.arc(pullPosition.x, pullPosition.y, 2, 0, Math.PI * 2);
+      context.arc(x, y, 2, 0, Math.PI * 2);
       context.fill();
     }
   }
@@ -337,9 +357,12 @@ function renderPullGizmo() {
 
 function renderSticks() {
   context.beginPath();
-  sticks.forEach(s => {
-    context.moveTo(s.p0.x, s.p0.y);
-    context.lineTo(s.p1.x, s.p1.y);
+  sticks.forEach(({ p0, p1 }) => {
+    const { x: xStart, y: yStart } = transformPointForCanvasBox(p0, 1200, 1200);
+    const { x: xEnd, y: yEnd } = transformPointForCanvasBox(p1, 1200, 1200);
+
+    context.moveTo(xStart, yStart);
+    context.lineTo(xEnd, yEnd);
   });
 
   context.stroke();
@@ -354,12 +377,11 @@ function renderMoveVector() {
   context.stroke();
 }
 
-function createStartPoint(angle, radius) {
-  const x = Math.cos(angle) * radius + 600 - 50 + Math.random() * 100;
-  const y = Math.sin(angle) * radius + 600 - 50 + Math.random() * 100;
+function createRingPoint(angle, radius) {
+  const x = Math.cos(angle) * radius - 0.05 + Math.random() * 0.1;
+  const y = Math.sin(angle) * radius - 0.05 + Math.random() * 0.1;
 
-  const speedInferScale = 0.6;
-
+  //const speedInferScale = 0.6;
   // const prevX = Math.cos(angle) * speedInferScale * radius + 600;
   // const prevY = Math.sin(angle) * speedInferScale * radius + 600;
 
@@ -376,24 +398,24 @@ function init() {
   sticks = [];
 
   const centerPoint = {
-    x: 600,
-    y: 600,
-    prevX: 600,
-    prevY: 600,
+    x: 0,
+    y: 0,
+    prevX: 0,
+    prevY: 0,
     isCenter: true,
   };
 
   points.push(centerPoint);
 
   for (let i = 0; i < 10; ++i) {
-    const newPoint = createStartPoint((Math.PI / 5) * i, 200);
+    const newPoint = createRingPoint((Math.PI / 5) * i, 0.3);
 
     points.push(newPoint);
 
     sticks.push({
       p0: centerPoint,
       p1: newPoint,
-      length: 200,
+      length: 0.3,
     });
   }
 
@@ -448,24 +470,25 @@ document.getElementById('mainCanvas').onclick = function (event) {
   const rect = event.target.getBoundingClientRect();
   const clickXpos = event.clientX - rect.left;
   const clickYpos = event.clientY - rect.top;
-
   const canvasXpos = (clickXpos / rect.width) * 1200;
   const canvasYpos = (clickYpos / rect.height) * 1200;
 
-  const similarPoint = points.find(p => distance(p, { x: canvasXpos, y: canvasYpos }) < 4);
+  const similarPoint = points.find(
+    p => distance(transformPointForCanvasBox(p, 1200, 1200), { x: canvasXpos, y: canvasYpos }) < 4,
+  );
 
   const updatedPullPosition = {
-    x: canvasXpos,
-    y: canvasYpos,
-    prevX: canvasXpos,
-    prevY: canvasYpos,
+    x: clickXpos / rect.width - 0.5,
+    y: canvasYpos / rect.width - 0.5,
+    prevX: clickXpos / rect.width - 0.5,
+    prevY: canvasYpos / rect.width - 0.5,
   };
 
   if (simulationMode === 'running') {
     if (similarPoint) {
       activePoint = similarPoint;
     }
-    if (pullPosition && distance(updatedPullPosition, pullPosition) < 7) {
+    if (pullPosition && distance(updatedPullPosition, pullPosition) < 0.006) {
       pullPosition = undefined;
     } else {
       pullPosition = updatedPullPosition;

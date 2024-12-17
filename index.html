@@ -18,19 +18,19 @@
 
     <div class="sliderGroup">
       <label id="sliderGravityLabel" for="sliderGravity"> Gravity: </label>
-      <input type="range" min="-0.3" max="0.3" step="0.001" id="sliderGravity" name="sliderGravity" />
+      <input type="range" min="-0.0003" max="0.0003" step="0.000001" id="sliderGravity" name="sliderGravity" />
 
       <label id="sliderFrictionLabel" for="sliderFriction"> Friction: </label>
       <input type="range" min="0" max="0.3" step="0.001" id="sliderFriction" name="sliderFriction" />
 
       <label id="stickCorrectionForceLabel" for="stickCorrectionForce"> Stick correction force: </label>
-      <input type="range" id="stickCorrectionForce" min="0" max="1" step="0.001" name="stickCorrectionForce" />
+      <input type="range" id="stickCorrectionForce" min="0" max="0.2" step="0.001" name="stickCorrectionForce" />
 
       <label id="repellentForceLabel" for="repellentForce"> Repellent force: </label>
-      <input type="range" id="repellentForce" name="repellentForce" min="100" max="20000" step="1" />
+      <input type="range" id="repellentForce" name="repellentForce" min="0" max="0.00005" step="0.000001" />
 
       <label id="targetPullForceLabel" for="targetPullForce"> Target pull force: </label>
-      <input type="range" id="targetPullForce" name="targetPullForce" min="0.0" max="0.1" step="0.0001" />
+      <input type="range" id="targetPullForce" name="targetPullForce" min="0.0" max="0.003" step="0.000001" />
 
       <label id="numVerletIterationsLabel" for="numVerletIterations"> Verlet iterations: </label>
       <input type="range" id="numVerletIterations" name="numVerletIterations" min="1" max="20" />
