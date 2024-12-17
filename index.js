@@ -127,7 +127,9 @@ function update() {
 
 // applies physics to the points
 function updatePoints() {
-  points.forEach(p => {
+  let pairCount = 0;
+
+  points.forEach((p, idx) => {
     if (p.fixed) {
       return;
     }
@@ -135,12 +137,21 @@ function updatePoints() {
     vX = p.x - p.prevX;
     vY = p.y - p.prevY;
 
-    points.forEach(otherP => {
-      if (otherP.x === p.x && otherP.y === p.y) {
+    //console.log(idx);
+
+    // we check points pairwise, but also, we check each pair twice, as Pa, Pb and as Pb, Pa
+    // this is correct because this way each end of the pair gets updated
+    // just make sure to do the stuff that is referring to the unordered pair only once
+    // for (let otherIdx = idx + 1; otherIdx < points.length; ++otherIdx) {
+    //   otherP = points[otherIdx];
+    points.forEach((otherP, otherIdx) => {
+      // do not relate points with themselves
+      if (idx === otherIdx) {
         return;
       }
 
-      // TODO: we check points pairwise, but also, we check each pair twice, as Pa, Pb and as Pb, Pa
+      ++pairCount;
+
       if (p.isCenter || otherP.isCenter) {
         return;
       }
@@ -215,6 +226,8 @@ function updatePoints() {
     //activePoint.x = lerp(activePoint.x, pullPosition.x, pullStrength);
     //activePoint.y = lerp(activePoint.y, pullPosition.y, pullStrength);
   }
+
+  console.log('pairCount', pairCount);
 }
 
 // constraints point position with the sticks
