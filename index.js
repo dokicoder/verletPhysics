@@ -5,16 +5,19 @@ let height = canvas.height;
 let aspect = height / width;
 
 let NUM_VERLET_ITERATIONS = 3;
-let repellentForce = 0.000001;
 
-let stickCorrectionForce = 0.001;
+const config = {
+  repellentForce: 0.000001,
+  stickCorrectionForce: 0.001,
+  wallBounceDamping: 0.78,
+  gravity: 0.00003,
+  friction: 0.01,
+  borderOffset: 0.0001,
+  targetPullForce: 0,
+};
 
-const wallBounceDamping = 0.78;
-let gravity = 0.00003;
-let friction = 0.01;
-const borderOffset = 0.0001;
-
-let targetPullForce = 0.0;
+let { repellentForce, stickCorrectionForce, wallBounceDamping, gravity, friction, borderOffset, targetPullForce } =
+  config;
 
 let points = [];
 let sticks = [];
@@ -306,12 +309,10 @@ function constrainBorders() {
     if (p.y > 0.5 - borderOffset) {
       p.y = 0.5 - borderOffset;
       p.prevY = p.y + vY * wallBounceDamping;
-      console.log('C');
     }
     if (p.y < -0.5 + borderOffset) {
       p.y = -0.5 + borderOffset;
       p.prevY = p.y + vY * wallBounceDamping;
-      console.log('D');
     }
   });
 }
